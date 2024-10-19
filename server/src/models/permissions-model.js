@@ -1,6 +1,10 @@
 import { DataTypes } from "sequelize";
+import { roleChecker } from "#utils";
+import middlewares from "#middlewares";
 import { db } from "#utils";
 import { v4 as uuid } from "uuid";
+
+const { asyncErrorHandler, ErrorHandler } = middlewares;
 
 const Permissions = db.define("permissions", {
   id: {
@@ -15,5 +19,35 @@ const Permissions = db.define("permissions", {
     allowNull: false,
   },
 });
+
+Permissions.beforeUpdate(
+  asyncErrorHandler(async (options) => {
+    const { id, permission } = options;
+    if (roleChecker(id, permission)) {
+      return;
+    }
+    return new ErrorHandler(403, "Unauthorized", null);
+  }),
+);
+
+Permissions.beforeCreate(
+  asyncErrorHandler(async (options) => {
+    const { id, permission } = options;
+    if (roleChecker(id, permission)) {
+      return;
+    }
+    return new ErrorHandler(403, "Unauthorized", null);
+  }),
+);
+
+Permissions.beforeDestroy(
+  asyncErrorHandler(async (options) => {
+    const { id, permission } = options;
+    if (roleChecker(id, permission)) {
+      return;
+    }
+    return new ErrorHandler(403, "Unauthorized", null);
+  }),
+);
 
 export default Permissions;
