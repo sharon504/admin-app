@@ -3,17 +3,36 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon index.js"
+    "dev": "nodemon ./src/server.js"
+  },
+  "imports": {
+    "#server": "./src/server.js",
+    "#app": "./src/app.js",
+    "#middlewares": "./src/middlewares/middlewares.js",
+    "#controllers": "./src/controllers/controllers.js",
+    "#models": "./src/models/models.js",
+    "#utils": "./src/utils/utils.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "nodejs": "^0.0.0",
+    "pg": "^8.13.0",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.4",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
     "nodemon": "^3.1.7"
-  }
+  },
+  "packageManager": "pnpm@9.12.2+sha512.22721b3a11f81661ae1ec68ce1a7b879425a1ca5b991c975b074ac220b187ce56c708fe5db69f4c962c989452eee76c82877f4ee80f474cebd61ee13461b6228"
 }
