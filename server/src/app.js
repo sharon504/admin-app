@@ -2,6 +2,8 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
+import middlewares from "#middlewares";
+
 const ROUTE_PREFIX = "/api/v1";
 
 const app = express();
@@ -15,5 +17,5 @@ app.use(
   }),
 );
 
-// app.use(errorHandler);
+app.use(middlewares.errorHandler);
 export default app;
