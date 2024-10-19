@@ -6,13 +6,17 @@ const createPermissions = async () => {
   for (const permission of PERMISSIONS) {
     await dbClient.sync();
     try {
-      await Permissions.create({
-        name: permission,
-      });
-      console.log(`Created permission ${permission}`);
+      if (await Permissions.findOne({ where: { name: permission } })) {
+        console.log(`Permission ${permission} exists`);
+        continue;
+      } else {
+        await Permissions.create({
+          name: permission,
+        });
+        console.log(`Created permission ${permission}`);
+      }
     } catch (error) {
-      // console.log("Error: ", error);
-      console.log("Permissions exists");
+      console.log("Error: ", error);
     }
   }
 };
@@ -37,46 +41,54 @@ const createAdminRoles = async () => {
 
 const createUserRoles = async () => {
   try {
-    const permissions = await Permissions.findAll({
-      where: {
-        name: {
-          [Op.or]: ["user.update_self", "user.read_self"],
+    if (await Roles.findOne({ where: { name: "default" } })) {
+      console.log("UserRoles exists");
+    } else {
+      const permissions = await Permissions.findAll({
+        where: {
+          name: {
+            [Op.or]: ["user.update_self", "user.read_self"],
+          },
         },
-      },
-    });
-    const role = await Roles.create({
-      name: "default",
-    });
-    role.addPermissions(permissions);
+      });
+      const role = await Roles.create({
+        name: "default",
+      });
+      role.addPermissions(permissions);
+      console.log("UserRoles created");
+    }
   } catch (error) {
-    // console.log("Error: ", error);
-    console.log("UserRoles exists");
+    console.log("Error: ", error);
   }
 };
 
 const createSubAdminRoles = async () => {
   try {
-    const permissions = await Permissions.findAll({
-      where: {
-        name: {
-          [Op.or]: [
-            "user.update",
-            "user.read",
-            "user.create",
-            "user.delete",
-            "user.update_self",
-            "user.read_self",
-          ],
+    if (await Roles.findOne({ where: { name: "subAdmin" } })) {
+      console.log("SubAdminRoles exists");
+    } else {
+      const permissions = await Permissions.findAll({
+        where: {
+          name: {
+            [Op.or]: [
+              "user.update",
+              "user.read",
+              "user.create",
+              "user.delete",
+              "user.update_self",
+              "user.read_self",
+            ],
+          },
         },
-      },
-    });
-    const role = await Roles.create({
-      name: "subAdmin",
-    });
-    role.addPermissions(permissions);
+      });
+      const role = await Roles.create({
+        name: "subAdmin",
+      });
+      role.addPermissions(permissions);
+      console.log("SubAdminRoles created");
+    }
   } catch (error) {
-    // console.log("Error: ", error);
-    console.log("SubAdminRoles exists");
+    console.log("Error: ", error);
   }
 };
 
