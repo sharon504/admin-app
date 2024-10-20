@@ -54,7 +54,6 @@ const deleteUser = asyncErrorHandler(async (req, res) => {
 
 const getUser = asyncErrorHandler(async (req, res) => {
   const { id } = req.params;
-  const { id: userId } = req.user;
   const user = await Users.findByPk(id);
   if (!user) {
     return ErrorHandler(res, 400, "User not found");
@@ -114,6 +113,26 @@ const deleteUserRole = asyncErrorHandler(async (req, res) => {
     .status(200)
     .json({ ok: true, message: "User role deleted successfully", data: user });
 });
+
+const userLogin = asyncErrorHandler(async (req, res) => {
+  const { email, password } = req.body;
+  const user = await Users.findOne({
+    where: {
+      email,
+    },
+  });
+  if (!user) {
+    return ErrorHandler(res, 400, "Invalid username or password");
+  }
+  const isPasswordMatch = await user.comparePassword(password);
+  if (!isPasswordMatch) {
+    return ErrorHandler(res, 400, "Invalid username or password");
+  }
+  return res
+    .status(200)
+    .json({ ok: true, message: "User logged in successfully", data: user });
+});
+
 const userController = {
   createUser,
   updateUser,
@@ -122,6 +141,7 @@ const userController = {
   getUsers,
   updateUserRole,
   deleteUserRole,
+  userLogin,
 };
 
 export default userController;
