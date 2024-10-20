@@ -29,6 +29,10 @@ const User = db.define("user", {
   },
 });
 
+User.prototype.comparePassword = async function (password) {
+  return bcrypt.compareSync(password, this.password);
+};
+
 User.beforeUpdate(
   asyncErrorHandler(async (user, options) => {
     const { id, permission } = options;
