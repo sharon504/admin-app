@@ -1,5 +1,5 @@
 import { Roles, Permissions } from "#models";
-import { ErrorHandler, asyncErrorHandler } from "#midddlewares";
+import { ErrorHandler, asyncErrorHandler } from "#middlewares";
 
 const createRole = asyncErrorHandler(async (req, res) => {
   const { name, permissions } = req.body;
@@ -8,7 +8,9 @@ const createRole = asyncErrorHandler(async (req, res) => {
   for (const permission of permissions) {
     const permissionExists = await Permissions.findByPk(permission);
     if (!permissionExists) {
-      return new ErrorHandler(404, `Permission ${permission} not found`, null);
+      return next(
+        new ErrorHandler(400, `Permission ${permission} not found`, null),
+      );
     }
     permissionsArray.push(permission);
   }
@@ -25,7 +27,7 @@ const createRole = asyncErrorHandler(async (req, res) => {
 const getRoles = asyncErrorHandler(async (req, res) => {
   const roles = await Roles.findAll();
   if (!roles) {
-    return new ErrorHandler(404, "Roles not found", null);
+    return next(new ErrorHandler(400, "Roles not found", null));
   }
   res
     .status(200)
@@ -36,7 +38,7 @@ const getRole = asyncErrorHandler(async (req, res) => {
   const { id } = req.params;
   const role = await Roles.findByPk(id);
   if (!role) {
-    return new ErrorHandler(404, "Role not found", null);
+    return next(new ErrorHandler(400, "Role not found", null));
   }
   res
     .status(200)
@@ -49,14 +51,14 @@ const deleteRolePermission = asyncErrorHandler(async (req, res) => {
   const { permissionId } = req.body;
   const role = await Roles.findByPk(id, { include: Permissions });
   if (!role) {
-    return new ErrorHandler(404, "Role not found", null);
+    return next(new ErrorHandler(400, "Role not found", null));
   }
   if (!role.permissions.includes(permissionId)) {
-    return new ErrorHandler(404, "Permission not found", null);
+    return next(new ErrorHandler(400, "Permission not found", null));
   }
   const permission = await Permissions.findByPk(permissionId);
   if (!permission) {
-    return new ErrorHandler(404, "Permission not found", null);
+    return next(new ErrorHandler(400, "Permission not found", null));
   }
   role.removePermission(permission, {
     id: userId,
@@ -78,7 +80,7 @@ const updateRole = asyncErrorHandler(async (req, res) => {
   for (const permission of permissions) {
     const permissionExists = await Permissions.findByPk(permission);
     if (!permissionExists) {
-      return new ErrorHandler(404, `Permission ${permission} not found`, null);
+      return next(new ErrorHandler(400, "Permission not found", null));
     } else if (role.permissions.includes(permission)) {
       continue;
     }
@@ -89,7 +91,7 @@ const updateRole = asyncErrorHandler(async (req, res) => {
     });
   }
   if (!role) {
-    return new ErrorHandler(404, "Role not found", null);
+    return next(new ErrorHandler(400, "Role not found", null));
   }
   res
     .status(200)
@@ -100,7 +102,7 @@ const deleteRole = asyncErrorHandler(async (req, res) => {
   const { id } = req.params;
   const role = await Roles.findByPk(id);
   if (!role) {
-    return new ErrorHandler(404, "Role not found", null);
+    return next(new ErrorHandler(400, "Role not found", null));
   }
   await role.destroy({
     id: userId,

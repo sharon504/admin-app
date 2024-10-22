@@ -9,7 +9,7 @@ const createPermission = asyncErrorHandler(async (req, res) => {
     { id: userId, permission: "permission.create", individual: true },
   );
   if (!permission) {
-    return ErrorHandler(res, 400, "Permission not created");
+    return next(new ErrorHandler(400, "Permission not created", null));
   }
   return res.status(201).json({
     ok: true,
@@ -21,7 +21,7 @@ const createPermission = asyncErrorHandler(async (req, res) => {
 const getPermissions = asyncErrorHandler(async (req, res) => {
   const permissions = await Permissions.findAll();
   if (!permissions) {
-    return ErrorHandler(res, 400, "Permissions not found");
+    return next(new ErrorHandler(400, "Permissions not found", null));
   }
   return res.status(200).json({
     ok: true,
@@ -34,7 +34,7 @@ const getPermission = asyncErrorHandler(async (req, res) => {
   const { id } = req.params;
   const permission = await Permissions.findByPk(id);
   if (!permission) {
-    return ErrorHandler(res, 400, "Permission not found");
+    return next(new ErrorHandler(400, "Permission not found", null));
   }
   return res.status(200).json({
     ok: true,
@@ -48,7 +48,7 @@ const deletePermission = asyncErrorHandler(async (req, res) => {
   const { id: userId } = req.user;
   const permission = await Permissions.findByPk(id);
   if (!permission) {
-    return ErrorHandler(res, 400, "Permission not found");
+    return next(new ErrorHandler(400, "Permission not found", null));
   }
   await permission.destroy({
     id: userId,
@@ -68,7 +68,7 @@ const updatePermission = asyncErrorHandler(async (req, res) => {
   const { name } = req.body;
   const permission = await Permissions.findByPk(id);
   if (!permission) {
-    return ErrorHandler(res, 400, "Permission not found");
+    return next(new ErrorHandler(400, "Permission not found", null));
   }
   await permission.update(
     { name },
@@ -83,8 +83,8 @@ const updatePermission = asyncErrorHandler(async (req, res) => {
 
 const permissionController = {
   createPermission,
-  getPermissions,
   getPermission,
+  getPermissions,
   updatePermission,
   deletePermission,
 };

@@ -26,10 +26,17 @@ const updateUser = asyncErrorHandler(async (req, res) => {
   if (!user) {
     return ErrorHandler(res, 400, "User not found");
   }
-  await user.update(
-    { email, password },
-    { id: userId, permission: "user.update", individual: true },
-  );
+  if (id === userId) {
+    await user.update(
+      { email, password },
+      { id: userId, permission: "user.update_self", individual: true },
+    );
+  } else {
+    await user.update(
+      { email, password },
+      { id: userId, permission: "user.update", individual: true },
+    );
+  }
   return res
     .status(200)
     .json({ ok: true, message: "User updated successfully", data: user });
@@ -76,17 +83,25 @@ const updateUserRole = asyncErrorHandler(async (req, res) => {
   const { roleId } = req.body;
   const user = await Users.findByPk(id);
   if (!user) {
-    return new ErrorHandler(404, "User not found", null);
+    return next(new ErrorHandler(404, "User not found", null));
   }
   const role = await Roles.findByPk(roleId);
   if (!role) {
-    return new ErrorHandler(404, "Role not found", null);
+    return next(new ErrorHandler(404, "Role not found", null));
   }
-  user.addRole(role, {
-    id: userId,
-    permission: "role.update",
-    individual: true,
-  });
+  if (id === userId) {
+    user.addRole(role, {
+      id: userId,
+      permission: "user.self_edit_role",
+      individual: true,
+    });
+  } else {
+    user.addRole(role, {
+      id: userId,
+      permission: "role.update",
+      individual: true,
+    });
+  }
   res
     .status(200)
     .json({ ok: true, message: "User role updated successfully", data: user });
@@ -98,17 +113,25 @@ const deleteUserRole = asyncErrorHandler(async (req, res) => {
   const { roleId } = req.body;
   const user = await Users.findByPk(id);
   if (!user) {
-    return new ErrorHandler(404, "User not found", null);
+    return next(new ErrorHandler(404, "User not found", null));
   }
   const role = await Roles.findByPk(roleId);
   if (!role) {
-    return new ErrorHandler(404, "Role not found", null);
+    return next(new ErrorHandler(404, "Role not found", null));
   }
-  user.removeRole(role, {
-    id: userId,
-    permission: "role.delete",
-    individual: true,
-  });
+  if (id === userId) {
+    user.removeRole(role, {
+      id: userId,
+      permission: "user.self_edit_role",
+      individual: true,
+    });
+  } else {
+    user.removeRole(role, {
+      id: userId,
+      permission: "role.update",
+      individual: true,
+    });
+  }
   res
     .status(200)
     .json({ ok: true, message: "User role deleted successfully", data: user });
@@ -116,21 +139,22 @@ const deleteUserRole = asyncErrorHandler(async (req, res) => {
 
 const userLogin = asyncErrorHandler(async (req, res) => {
   const { email, password } = req.body;
-  const user = await Users.findOne({
+  const user = await Users.scope("withPassword").findOne({
     where: {
       email,
     },
   });
   if (!user) {
-    return ErrorHandler(res, 400, "Invalid username or password");
+    return next(new ErrorHandler(400, "Invalid username or password", null));
   }
   const isPasswordMatch = await user.comparePassword(password);
   if (!isPasswordMatch) {
-    return ErrorHandler(res, 400, "Invalid username or password");
+    return next(new ErrorHandler(400, "Invalid username or password", null));
   }
+  const token = await user.getAuthToken();
   return res
     .status(200)
-    .json({ ok: true, message: "User logged in successfully", data: user });
+    .json({ ok: true, message: "User logged in successfully", data: token });
 });
 
 const userController = {
