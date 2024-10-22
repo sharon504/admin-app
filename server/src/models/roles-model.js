@@ -1,9 +1,7 @@
 import { DataTypes } from "sequelize";
 import { db, roleChecker } from "#utils";
 import { v4 as uuid } from "uuid";
-import middlewares from "#middlewares";
-
-const { asyncErrorHandler, ErrorHandler } = middlewares;
+import { ErrorHandler, asyncErrorHandler } from "#middlewares";
 
 const Roles = db.define("role", {
   id: {

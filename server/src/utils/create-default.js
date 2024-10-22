@@ -1,9 +1,7 @@
 import { Permissions, Roles, Users, dbClient } from "#models";
 import { Op } from "sequelize";
 import { PERMISSIONS } from "#utils";
-import middlewares from "#middlewares";
-
-const { asyncErrorHandler, ErrorHandler } = middlewares;
+import { ErrorHandler, asyncErrorHandler } from "#middlewares";
 
 const createPermissions = asyncErrorHandler(async () => {
   for (const permission of PERMISSIONS) {
