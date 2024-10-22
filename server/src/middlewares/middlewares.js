@@ -3,10 +3,6 @@ import ErrorHandler, {
   errorHandler,
 } from "./error-handler.js";
 
-const middlewares = {
-  asyncErrorHandler,
-  errorHandler,
-  ErrorHandler,
-};
+import authHandler from "./auth-handler.js";
 
-export default middlewares;
+export { asyncErrorHandler, errorHandler, ErrorHandler, authHandler };

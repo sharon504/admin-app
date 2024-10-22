@@ -1,14 +1,12 @@
 import { Router } from "express";
-import { permissionController } from "../controllers/controllers";
+import { permissionController } from "#controllers";
 
-const permissionRouter = Router();
+const permissionsRouter = Router();
 
-permissionController.post("/", permissionController.createPermission);
-permissionController.get("/", permissionController.getPermissions);
-permissionController.get("/:id", permissionController.getPermission);
-permissionController.put("/:id", permissionController.updatePermission);
-permissionController.delete("/:id", permissionController.deletePermission);
+permissionsRouter.post("/", permissionController.createPermission);
+permissionsRouter.get("/", permissionController.getPermissions);
+permissionsRouter.put("/:id", permissionController.updatePermission);
+permissionsRouter.delete("/:id", permissionController.deletePermission);
+permissionsRouter.use("/:id", permissionController.getPermission);
 
-permissionRouter.use("/:id", permissionController.getPermission);
-
-export default permissionRouter;
+export default permissionsRouter;

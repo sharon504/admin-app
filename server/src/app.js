@@ -2,8 +2,9 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
-import middlewares from "#middlewares";
+import { errorHandler, authHandler } from "#middlewares";
 
+import { roleRouter, userRouter, permissionsRouter } from "#routes";
 const ROUTE_PREFIX = "/api/v1";
 
 const app = express();
@@ -17,5 +18,9 @@ app.use(
   }),
 );
 
-app.use(middlewares.errorHandler);
+app.use(errorHandler);
+app.use(ROUTE_PREFIX + "/user", userRouter);
+app.use(ROUTE_PREFIX + "/role", authHandler, roleRouter);
+app.use(ROUTE_PREFIX + "/permissions", authHandler, permissionsRouter);
+
 export default app;
