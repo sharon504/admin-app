@@ -10,4 +10,4 @@ COPY ./package.json ./
 
 RUN pnpm i 
 
-EXPOSE 2000
+EXPOSE 5173
