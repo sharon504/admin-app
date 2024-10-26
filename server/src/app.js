@@ -13,14 +13,14 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: "http://localhost",
     credentials: true,
   }),
 );
 
-app.use(errorHandler);
 app.use(ROUTE_PREFIX + "/user", userRouter);
 app.use(ROUTE_PREFIX + "/role", authHandler, roleRouter);
 app.use(ROUTE_PREFIX + "/permissions", authHandler, permissionsRouter);
+app.use(errorHandler);
 
 export default app;

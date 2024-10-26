@@ -21,18 +21,19 @@ services:
     restart: always
     environment:
       - PORT=2000
-      - CLIENT_URL=http://client:3000
+      - CLIENT_URL=http://localhost:5173
+      - JWT_SECRET=secret
       - POSTGRES_PORT=5432
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=admin-app
       - POSTGRES_HOST=database
     command: >
-      sh -c "pnpm run dev"
+      sh -c "node src/utils/dbSeed.js && pnpm run dev"
     volumes:
       - /home/alpha/WorkDir/sd.projectIntern/admin-app/server/:/usr/src/app/server
     ports:
-      - "2000:2000"
+      - "3000:3000"
     depends_on:
       - database
     networks:

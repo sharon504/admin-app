@@ -18,34 +18,34 @@ const Permissions = db.define("permissions", {
   },
 });
 
-// Permissions.beforeUpdate(
-//   asyncErrorHandler(async (options) => {
-//     const { id, permission } = options;
-//     if (roleChecker(id, permission)) {
-//       return;
-//     }
-//     return new ErrorHandler(403, "Unauthorized", null);
-//   }),
-// );
-//
-// Permissions.beforeCreate(
-//   asyncErrorHandler(async (options) => {
-//     const { id, permission } = options;
-//     if (roleChecker(id, permission)) {
-//       return;
-//     }
-//     return new ErrorHandler(403, "Unauthorized", null);
-//   }),
-// );
-//
-// Permissions.beforeDestroy(
-//   asyncErrorHandler(async (options) => {
-//     const { id, permission } = options;
-//     if (roleChecker(id, permission)) {
-//       return;
-//     }
-//     return new ErrorHandler(403, "Unauthorized", null);
-//   }),
-// );
+Permissions.beforeUpdate(
+  asyncErrorHandler(async (options) => {
+    const { id, permission } = options;
+    if (roleChecker(id, permission)) {
+      return;
+    }
+    return new ErrorHandler(403, "Unauthorized", null);
+  }),
+);
+
+Permissions.beforeCreate(
+  asyncErrorHandler(async (options) => {
+    const { id, permission } = options;
+    if (roleChecker(id, permission)) {
+      return;
+    }
+    return new ErrorHandler(403, "Unauthorized", null);
+  }),
+);
+
+Permissions.beforeDestroy(
+  asyncErrorHandler(async (options) => {
+    const { id, permission } = options;
+    if (roleChecker(id, permission)) {
+      return;
+    }
+    return new ErrorHandler(403, "Unauthorized", null);
+  }),
+);
 
 export default Permissions;

@@ -80,21 +80,33 @@ const createSubAdminRoles = asyncErrorHandler(async () => {
 const createAdmin = asyncErrorHandler(async () => {
   const user = await Users.findOne({
     where: {
-      username: "default",
+      username: "admin",
     },
   });
   if (!user) {
-    const role = await Roles.findOne({
+    const SubAdminRole = await Roles.findOne({
+      where: {
+        name: "subAdmin",
+      },
+    });
+    const DefaultRole = await Roles.findOne({
       where: {
         name: "default",
       },
     });
+    const AdminRole = await Roles.findOne({
+      where: {
+        name: "admin",
+      },
+    });
     const adminUser = await Users.create({
-      username: "default",
+      username: "admin",
       password: "adminPassword",
       email: "admin@admin.com",
     });
-    adminUser.addRole(role);
+    adminUser.addRole(AdminRole);
+    adminUser.addRole(SubAdminRole);
+    adminUser.addRole(DefaultRole);
     console.log("Admin created");
   } else {
     console.log("Admin exists");

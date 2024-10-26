@@ -1,16 +1,24 @@
-import { Users, Roles } from "#models";
+import { Users, Roles, UserRole } from "#models";
 import { ErrorHandler, asyncErrorHandler } from "#middlewares";
 
-const createUser = asyncErrorHandler(async (req, res) => {
-  const { email, password } = req.body;
+const createUser = asyncErrorHandler(async (req, res, next) => {
+  const { username, email, password } = req.body;
   const defaultRole = await Roles.findOne({
     where: {
       name: "default",
     },
   });
-  const user = await Users.create({ email, password });
+  let previousUser = await Users.findOne({ where: { username } });
+  if (previousUser) {
+    return next(new ErrorHandler(409, "Username already exists", null));
+  }
+  previousUser = await Users.findOne({ where: { email } });
+  if (previousUser) {
+    return next(new ErrorHandler(409, "Email already exists", null));
+  }
+  const user = await Users.create({ username, email, password });
   if (!user) {
-    return ErrorHandler(res, 400, "User not created");
+    return;
   }
   user.addRole(defaultRole);
   return res
@@ -18,13 +26,13 @@ const createUser = asyncErrorHandler(async (req, res) => {
     .json({ ok: true, message: "User created successfully", data: user });
 });
 
-const updateUser = asyncErrorHandler(async (req, res) => {
+const updateUser = asyncErrorHandler(async (req, res, next) => {
   const { id } = req.params;
   const { id: userId } = req.user;
   const { email, password } = req.body;
   const user = await Users.findByPk(id);
   if (!user) {
-    return ErrorHandler(res, 400, "User not found");
+    return next(new ErrorHandler(400, "User not found", null));
   }
   if (id === userId) {
     await user.update(
@@ -42,12 +50,12 @@ const updateUser = asyncErrorHandler(async (req, res) => {
     .json({ ok: true, message: "User updated successfully", data: user });
 });
 
-const deleteUser = asyncErrorHandler(async (req, res) => {
+const deleteUser = asyncErrorHandler(async (req, res, next) => {
   const { id } = req.params;
   const { id: userId } = req.user;
   const user = await Users.findByPk(id);
   if (!user) {
-    return ErrorHandler(res, 400, "User not found");
+    return next(new ErrorHandler(400, "User not found", null));
   }
   await user.destroy({
     id: userId,
@@ -59,11 +67,11 @@ const deleteUser = asyncErrorHandler(async (req, res) => {
     .json({ ok: true, message: "User deleted successfully", data: user });
 });
 
-const getUser = asyncErrorHandler(async (req, res) => {
+const getUser = asyncErrorHandler(async (req, res, next) => {
   const { id } = req.params;
   const user = await Users.findByPk(id);
   if (!user) {
-    return ErrorHandler(res, 400, "User not found");
+    return next(new ErrorHandler(400, "User not found", null));
   }
   return res
     .status(200)
@@ -77,7 +85,7 @@ const getUsers = asyncErrorHandler(async (req, res) => {
     .json({ ok: true, message: "Users fetched successfully", data: users });
 });
 
-const updateUserRole = asyncErrorHandler(async (req, res) => {
+const updateUserRole = asyncErrorHandler(async (req, res, next) => {
   const { id } = req.params;
   const { id: userId } = req.user;
   const { roleId } = req.body;
@@ -107,7 +115,7 @@ const updateUserRole = asyncErrorHandler(async (req, res) => {
     .json({ ok: true, message: "User role updated successfully", data: user });
 });
 
-const deleteUserRole = asyncErrorHandler(async (req, res) => {
+const deleteUserRole = asyncErrorHandler(async (req, res, next) => {
   const { id } = req.params;
   const { id: userId } = req.user;
   const { roleId } = req.body;
@@ -137,24 +145,34 @@ const deleteUserRole = asyncErrorHandler(async (req, res) => {
     .json({ ok: true, message: "User role deleted successfully", data: user });
 });
 
-const userLogin = asyncErrorHandler(async (req, res) => {
+const userLogin = asyncErrorHandler(async (req, res, next) => {
   const { email, password } = req.body;
   const user = await Users.scope("withPassword").findOne({
-    where: {
-      email,
-    },
+    where: { email },
+    include: [
+      {
+        model: Roles,
+        through: {
+          model: UserRole,
+          attributes: ["id", "userId", "roleId"], // Include the join table attributes
+        },
+      },
+    ],
   });
+  console.log(user);
   if (!user) {
     return next(new ErrorHandler(400, "Invalid username or password", null));
   }
-  const isPasswordMatch = await user.comparePassword(password);
+  const isPasswordMatch = await user.comparePassword(password, user);
   if (!isPasswordMatch) {
     return next(new ErrorHandler(400, "Invalid username or password", null));
   }
-  const token = await user.getAuthToken();
-  return res
-    .status(200)
-    .json({ ok: true, message: "User logged in successfully", data: token });
+  const token = await user.getAuthToken(user);
+  return res.status(200).json({
+    ok: true,
+    message: "User logged in successfully",
+    data: { token, user },
+  });
 });
 
 const userController = {

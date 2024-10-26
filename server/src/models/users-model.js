@@ -2,6 +2,7 @@ import { DataTypes } from "sequelize";
 import { db, roleChecker } from "#utils";
 import bcrypt from "bcryptjs";
 import { v4 as uuid } from "uuid";
+import jwt from "jsonwebtoken";
 import { ErrorHandler, asyncErrorHandler } from "#middlewares";
 
 const User = db.define(
@@ -44,13 +45,13 @@ const User = db.define(
   },
 );
 
-User.prototype.comparePassword = async function (password) {
-  return bcrypt.compareSync(password, this.password);
+User.prototype.comparePassword = async function (password, user) {
+  return bcrypt.compareSync(password, user.password);
 };
 
-User.prototype.getAuthToken = () => {
+User.prototype.getAuthToken = (user) => {
   return jwt.sign(
-    { id: this.id, username: this.username, role: this.role },
+    { id: user.id, username: user.username, role: user.role },
     process.env.JWT_SECRET,
     {
       expiresIn: "1h",
@@ -58,9 +59,9 @@ User.prototype.getAuthToken = () => {
   );
 };
 
-User.prototype.validateAuthToken = async function (token) {
+User.prototype.validateAuthToken = function (token) {
   try {
-    await jwt.verify(token, process.env.JWT_SECRET);
+    jwt.verify(token, process.env.JWT_SECRET);
     return true;
   } catch (err) {
     console.log(err);
